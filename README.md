@@ -40,6 +40,10 @@ Because it uses unicode characters for drawing, cmap is sensitive to the choice 
 - vim-style shortcuts gg, G, ^, and $ move to the top, bottom, left edge, and right edge, respectively.
 - [+,-] can be used to increase and decrease the distance threshold.
 
-### Screenshots
+## Screenshots
 
+In Terminator, TERM=xterm-256color, using font Ubuntu Mono Regular:
 ![Screenshot](screenshots/screenshot2.png?raw=true)
+
+In vt100 compatibility mode:
+![Screenshot](screenshots/screenshot3.png?raw=true)
