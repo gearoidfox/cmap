@@ -1,0 +1,9 @@
+Makefile linguist-vendored
+Makefile.am linguist-vendored
+Makefile.in linguist-vendored
+configure linguist-vendored
+configure.ac linguist-vendored
+a4local.m4 linguist-vendored
+compile linguist-vendored
+depcomp linguist-vendored
+install.sh linguist-vendored
