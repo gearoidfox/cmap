@@ -57,17 +57,17 @@ calculate_distmat(struct coords cs)
         if(cs.coords == NULL) return NULL;
         if(cs.nres == 0) return NULL;
 
-        dm = (struct distmat *) malloc(sizeof(struct distmat));
+        dm = malloc(sizeof(*dm));
         if(dm == NULL) return NULL;
         dm->mat = NULL;
         dm->nres = cs.nres;
 
-        dist = (double**) malloc((cs.nres - 1) * sizeof(double*));
+        dist = malloc((cs.nres - 1) * sizeof(*dist));
         if(dist == NULL) goto cdm_error_cleanup;
 
         for(i = 0; i < cs.nres - 1; i++){
                 dist[i] = NULL;
-                dist[i] = (double*) malloc((cs.nres - 1 - i) * sizeof(double));
+                dist[i] = malloc((cs.nres - 1 - i) * sizeof(*dist[i]));
                 if(dist[i] == NULL) goto cdm_error_cleanup;
         }
         for(i = 0; i < cs.nres - 1; i++){
@@ -162,7 +162,7 @@ getcoords(char* filename, char target_chain){
         fp = fopen(filename, "r");
         if (fp == NULL) return NULL;
 
-        cs = malloc(sizeof (struct coords));
+        cs = malloc(sizeof (*cs));
         if (cs == NULL) return NULL;
 
         /* Initial pass through file to count residues in chain of interest */
@@ -182,7 +182,7 @@ getcoords(char* filename, char target_chain){
         }
         if(nres == 0) goto gc_error_cleanup;
         
-        coords = (double**) malloc(nres * sizeof(double*));
+        coords = malloc(nres * sizeof(*coords));
         if(coords == NULL) goto gc_error_cleanup;
         for(i = 0; i < nres; i++ ){
                 coords[i] = NULL;
@@ -221,7 +221,7 @@ getcoords(char* filename, char target_chain){
                                          * the ones we just found.
                                          */
                                 }
-                                else coords[n-1] = (double*) malloc(3 * sizeof (double));
+                                else coords[n-1] = malloc(3 * sizeof(*coords[n-1]));
                                 if(coords[n-1] == NULL) goto gc_error_cleanup;
                                 coords[n-1][0] = atof(x);
                                 coords[n-1][1] = atof(y);

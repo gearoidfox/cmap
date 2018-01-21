@@ -52,7 +52,7 @@ make_hpos_str(unsigned int x_draw_limit)
         size_t num_len;
         unsigned int i;
 
-        s = (char *) malloc((x_draw_limit + 1) * sizeof(char));
+        s = malloc((x_draw_limit + 1) * sizeof(*s));
         if(s == NULL) return NULL;
         for (i = 0; i < x_draw_limit + 1; i++){
                 s[i] = ' ';
@@ -88,7 +88,7 @@ make_vpos_str(unsigned int y_draw_limit)
         unsigned int screen_counter;
         size_t num_len;
         unsigned int i;
-        s = (char *) malloc((y_draw_limit + 1) * sizeof(char));
+        s = malloc((y_draw_limit + 1) * sizeof(*s));
         if(s == NULL) return NULL;
         for (i = 0; i < y_draw_limit + 1; i++){
                 s[i] = ' ';
