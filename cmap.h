@@ -18,6 +18,12 @@
  *
  */
 
+
+#ifndef CMAP_H_
+#define CMAP_H_
+
+#include "pdb.h"
+
 /**
  * CHECKB_LIGHT(y, x):
  * Given screen coordinates (y,x), this macro returns TRUE if we should colour
@@ -33,7 +39,6 @@
                            ||(  ((x) % 20 >= 10) \
                               &&((y) % 10 >= 5)  \
                              )) ? TRUE : FALSE) 
-struct distmat;
 
 void def_colours(void);
 void draw_bg(WINDOW * scr, unsigned int cols, unsigned int rows);
@@ -43,3 +48,5 @@ void init_curses(void);
 int main(int argc, char **argv);
 char * make_hpos_str(unsigned int x_draw_limit);
 char * make_vpos_str(unsigned int y_draw_limit);
+
+#endif // CMAP_H_

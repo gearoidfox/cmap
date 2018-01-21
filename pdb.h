@@ -18,6 +18,9 @@
  *
  */
 
+#ifndef CMAP_PDB_H_
+#define CMAP_PDB_H_
+
 struct coords{
         double **coords;
         int nres;
@@ -30,7 +33,9 @@ struct distmat{
 
 struct distmat * calculate_distmat(struct coords cs);
 double euclid3d(double x1, double y1, double z1, double x2, double y2, double z2);
+void freecoords(struct coords *cs);
 void freedm(struct distmat *dm);
 struct coords * getcoords(char* filename, char chain);
-void freecoords(struct coords *cs);
 double getdist(struct distmat dm, int i, int j);
+
+#endif // CMAP_PDB_H_
