@@ -366,11 +366,14 @@ main(int argc, char **argv)
         int nrow, ncol;
         char usage_str[1024];
 
-        snprintf(usage_str, 1024, "usage: %s [-c chain] [-t threshold] input_file\n"
-                        "\tinput_file: path to Protein Data Bank file\n"
-                        "\tchain:      chain to read from input file\n"
-                        "\tthreshold:  distance threshold for contact (Angstroms)\n",
-                        argv[0]);
+        snprintf(usage_str, 1024, "cmap version 0.1\n\n"
+                        "Usage:\n"
+                        "  cmap [-c chain] [-t threshold] <pdb file>\n"
+                        "\nOptions:\n"
+                        "  -c, --chain      chain to read from input file\n"
+                        "  -h, --help       show this message\n"
+                        "  -t, --threshold  distance threshold for contact (Angstroms)\n"
+                        "\n");
 
         /*
          * Parse command line arguments
@@ -379,13 +382,14 @@ main(int argc, char **argv)
         {
                 {"chain", required_argument, 0, 'c'},
                 {"dist", required_argument, 0, 't'},
+                {"help", no_argument, 0, 'h'},
                 {0, 0, 0, 0}
         };
 
         int option_index = 0;
         int opt;
         while(1){
-                opt = getopt_long(argc, argv, "c:t:", long_options, &option_index);
+                opt = getopt_long(argc, argv, "c:ht:", long_options, &option_index);
                 if(opt == -1)
                         break;
                 if (opt == 'c'){
@@ -394,15 +398,20 @@ main(int argc, char **argv)
                 if (opt == 't'){
                         threshold = atof(optarg);
                 }
+                if(opt == 'h'){
+                        printf("%s", usage_str);
+                        return 0;
+                }
         }
         if( argc < 2){
-                fprintf(stderr, "FATAL: Must specify a filename.\n");
                 fprintf(stderr, "%s", usage_str);
+                fprintf(stderr, "FATAL: Must specify a filename.\n");
                 return 1;
         }
         else {
                 filename = argv[optind];
                 if(filename == NULL){
+                        fprintf(stderr, "%s", usage_str);
                         fprintf(stderr, "FATAL: Must specify a filename.\n");
                         return 1;
                 }
