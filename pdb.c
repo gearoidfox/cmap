@@ -62,6 +62,16 @@ calculate_distmat(struct coords cs)
         dm->mat = NULL;
         dm->nres = cs.nres;
 
+        dm->source_chain = cs.source_chain;
+
+        dm->source_filename = NULL;
+        if(cs.source_filename != NULL){
+                i = strlen(cs.source_filename) + 1;
+                dm->source_filename = malloc(i * sizeof(*(dm->source_filename)));
+                if(dm->source_filename == NULL) goto cdm_error_cleanup;
+                strncpy(dm->source_filename, cs.source_filename, i);
+        }
+
         dist = malloc((cs.nres - 1) * sizeof(*dist));
         if(dist == NULL) goto cdm_error_cleanup;
 
@@ -90,6 +100,7 @@ calculate_distmat(struct coords cs)
         cdm_error_cleanup:
         if(dm != NULL){
                 if(dm->mat != NULL) free(dm->mat);
+                if(dm->source_filename != NULL) free(dm->source_filename);
                 free(dm);
                 dm = NULL;
         }
@@ -135,6 +146,8 @@ freedm(struct distmat *dm)
                 dm->mat[i] = NULL;
         }
         free(dm->mat);
+        if(dm->source_filename != NULL) free(dm->source_filename);
+        dm->source_filename = NULL;
         free(dm);
 }
 
@@ -164,6 +177,14 @@ getcoords(char* filename, char target_chain){
 
         cs = malloc(sizeof (*cs));
         if (cs == NULL) return NULL;
+
+        cs->source_chain = target_chain;
+
+        n = strlen(filename) + 1;
+        cs->source_filename = NULL;
+        cs->source_filename = malloc(n * sizeof(*(cs->source_filename)));
+        if(cs->source_filename == NULL) goto gc_error_cleanup;
+        strncpy(cs->source_filename, filename, n);
 
         /* Initial pass through file to count residues in chain of interest */
         while(fgets(buffer, 1028, fp)!= NULL){
@@ -239,7 +260,10 @@ getcoords(char* filename, char target_chain){
          * returning NULL. Needed if any call to malloc after the first fails.
          */
         gc_error_cleanup:
-        if(cs) free(cs);
+        if(cs){
+                if(cs->source_filename != NULL) free(cs->source_filename);
+                free(cs);
+        }
         if(coords){
                 for(i=0; i<nres; i++ ){
                         if(coords[i]){
@@ -266,6 +290,8 @@ void freecoords(struct coords *cs){
         }
         free(cs->coords);
         cs->coords = NULL;
+        if(cs->source_filename != NULL) free(cs->source_filename);
+        cs->source_filename = NULL;
         free(cs);
 }
 

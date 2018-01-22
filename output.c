@@ -18,6 +18,9 @@ write_contacts(FILE *fp, struct distmat dm, double threshold)
                 return;
         }
         fprintf(fp, "# cmap v0.1\n");
+        if(dm.source_filename != NULL)
+                fprintf(fp, "# source file: %s\n", dm.source_filename);
+                fprintf(fp, "# source chain: %c\n", dm.source_chain);
         for(i = 0; i < dm.nres - 1; i++){
                 for(j = i + 1; j < dm.nres; j++){
                         if(getdist(dm, i, j) < threshold)

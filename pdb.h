@@ -23,12 +23,16 @@
 
 struct coords{
         double **coords;
+        char *source_filename;
         int nres;
+        char source_chain;
 };
 
 struct distmat{
         double **mat;
+        char *source_filename;
         int nres;
+        char source_chain;
 };
 
 struct distmat * calculate_distmat(struct coords cs);

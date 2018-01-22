@@ -370,10 +370,11 @@ main(int argc, char **argv)
 
         snprintf(usage_str, 1024, "cmap version 0.1\n\n"
                         "Usage:\n"
-                        "  cmap [-c chain] [-t threshold] <pdb file>\n"
+                        "  cmap [-c chain] [-o output_file] [-t threshold] <pdb_file>\n"
                         "\nOptions:\n"
                         "  -c, --chain      chain to read from input file\n"
                         "  -h, --help       show this message\n"
+                        "  -o, --output     save contacts to file\n"
                         "  -t, --threshold  distance threshold for contact (Angstroms)\n"
                         "\n");
 
