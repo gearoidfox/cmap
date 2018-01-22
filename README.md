@@ -1,9 +1,12 @@
 # cmap - quickly preview protein contact maps in a terminal
 
-## What is it?
-cmap is a command line program which reads [Protein Data Bank](http://pdb101.rcsb.org/learn/guide-to-understanding-pdb-data/introduction) coordinate files and uses ncurses to display a [protein contact map](https://en.wikipedia.org/wiki/Protein_contact_map) in a terminal.
+cmap is a command line program which reads [Protein Data Bank](http://pdb101.rcsb.org/learn/guide-to-understanding-pdb-data/introduction) coordinate files and uses ncurses to display a [protein contact map](https://en.wikipedia.org/wiki/Protein_contact_map).
 
 ![Screenshot](screenshots/screenshot1.png?raw=true)
+
+## Usage
+
+    cmap --help
 
 ## Installation
 
@@ -15,7 +18,13 @@ cmap is a command line program which reads [Protein Data Bank](http://pdb101.rcs
 
 ### Dependencies
 
-cmap requires an ncurses library with wide character support.
+cmap requires an ncurses library with wide character support. On some platforms, the default ncurses library supports wide characters, while on others, this functionality is in a separate library.
+
+On Ubuntu (17.10), you should install libncursesw5-dev, e.g.
+
+    sudo apt install libncursesw5-dev
+
+On OS X (10.6), the standard ncurses library is OK.
 
 ## Compatibility
 
