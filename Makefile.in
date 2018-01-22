@@ -101,7 +101,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_cmap_OBJECTS = cmap-cmap.$(OBJEXT) cmap-pdb.$(OBJEXT)
+am_cmap_OBJECTS = cmap-cmap.$(OBJEXT) cmap-pdb.$(OBJEXT) \
+	cmap-output.$(OBJEXT)
 cmap_OBJECTS = $(am_cmap_OBJECTS)
 cmap_LDADD = $(LDADD)
 cmap_LINK = $(CCLD) $(cmap_CFLAGS) $(CFLAGS) $(cmap_LDFLAGS) \
@@ -277,7 +278,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 cmap_CFLAGS = $(CURSESFLAGS)
 cmap_LDFLAGS = $(CURSESLIBS)
-cmap_SOURCES = cmap.c cmap.h pdb.c pdb.h
+cmap_SOURCES = cmap.c cmap.h pdb.c pdb.h output.c output.h
 all: all-am
 
 .SUFFIXES:
@@ -369,6 +370,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmap-cmap.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmap-output.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmap-pdb.Po@am__quote@
 
 .c.o:
@@ -412,6 +414,20 @@ cmap-pdb.obj: pdb.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='pdb.c' object='cmap-pdb.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cmap_CFLAGS) $(CFLAGS) -c -o cmap-pdb.obj `if test -f 'pdb.c'; then $(CYGPATH_W) 'pdb.c'; else $(CYGPATH_W) '$(srcdir)/pdb.c'; fi`
+
+cmap-output.o: output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cmap_CFLAGS) $(CFLAGS) -MT cmap-output.o -MD -MP -MF $(DEPDIR)/cmap-output.Tpo -c -o cmap-output.o `test -f 'output.c' || echo '$(srcdir)/'`output.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cmap-output.Tpo $(DEPDIR)/cmap-output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='output.c' object='cmap-output.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cmap_CFLAGS) $(CFLAGS) -c -o cmap-output.o `test -f 'output.c' || echo '$(srcdir)/'`output.c
+
+cmap-output.obj: output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cmap_CFLAGS) $(CFLAGS) -MT cmap-output.obj -MD -MP -MF $(DEPDIR)/cmap-output.Tpo -c -o cmap-output.obj `if test -f 'output.c'; then $(CYGPATH_W) 'output.c'; else $(CYGPATH_W) '$(srcdir)/output.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cmap-output.Tpo $(DEPDIR)/cmap-output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='output.c' object='cmap-output.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cmap_CFLAGS) $(CFLAGS) -c -o cmap-output.obj `if test -f 'output.c'; then $(CYGPATH_W) 'output.c'; else $(CYGPATH_W) '$(srcdir)/output.c'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique

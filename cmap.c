@@ -31,6 +31,7 @@
 
 #include"cmap.h"
 #include"pdb.h"
+#include"output.h"
 
 bool g_has_colours = false;
 
@@ -355,9 +356,10 @@ int
 main(int argc, char **argv)
 {	
         setlocale(LC_CTYPE, "");
-//        int i;
         int j;
         char *filename = NULL;
+        char *ofname = NULL;
+        FILE *ofp;
         struct distmat * dist = NULL; 
         double threshold = 8;
         char chain = 'A';
@@ -383,13 +385,14 @@ main(int argc, char **argv)
                 {"chain", required_argument, 0, 'c'},
                 {"dist", required_argument, 0, 't'},
                 {"help", no_argument, 0, 'h'},
+                {"output", required_argument, 0, 'o'},
                 {0, 0, 0, 0}
         };
 
         int option_index = 0;
         int opt;
         while(1){
-                opt = getopt_long(argc, argv, "c:ht:", long_options, &option_index);
+                opt = getopt_long(argc, argv, "c:ht:o:", long_options, &option_index);
                 if(opt == -1)
                         break;
                 if (opt == 'c'){
@@ -401,6 +404,9 @@ main(int argc, char **argv)
                 if(opt == 'h'){
                         printf("%s", usage_str);
                         return 0;
+                }
+                if(opt == 'o'){
+                        ofname = optarg;
                 }
         }
         if( argc < 2){
@@ -434,6 +440,23 @@ main(int argc, char **argv)
         }
         freecoords(cs);
         cs = NULL;
+
+        /*
+         * Write contacts to file (optional)
+         */
+
+        if(ofname != NULL){
+                ofp = fopen(ofname, "w");
+                if(ofp == NULL){
+                        fprintf(stderr, "%s", usage_str);
+                        fprintf(stderr, "FATAL: couldn't open output file [%s]\n", ofname);
+                        return 1;
+                }
+                write_contacts(ofp, *dist, threshold);
+                printf("Wrote contacts to file [%s].\n", ofname);
+                fclose(ofp);
+                ofp = NULL;
+        }
 
         /* 
          * Set up curses display
