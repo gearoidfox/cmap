@@ -71,6 +71,14 @@ calculate_distmat(struct coords cs)
                 if(dm->source_filename == NULL) goto cdm_error_cleanup;
                 strncpy(dm->source_filename, cs.source_filename, i);
         }
+        
+        dm->sequence = NULL;
+        if(cs.sequence != NULL){
+                i = strlen(cs.sequence) + 1;
+                dm->sequence = malloc(i * sizeof(*(dm->sequence)));
+                if(dm->sequence == NULL) goto cdm_error_cleanup;
+                strncpy(dm->sequence, cs.sequence, i);
+        }
 
         dist = malloc((cs.nres - 1) * sizeof(*dist));
         if(dist == NULL) goto cdm_error_cleanup;
@@ -101,6 +109,7 @@ calculate_distmat(struct coords cs)
         if(dm != NULL){
                 if(dm->mat != NULL) free(dm->mat);
                 if(dm->source_filename != NULL) free(dm->source_filename);
+                if(dm->sequence != NULL) free(dm->sequence);
                 free(dm);
                 dm = NULL;
         }
@@ -148,6 +157,8 @@ freedm(struct distmat *dm)
         free(dm->mat);
         if(dm->source_filename != NULL) free(dm->source_filename);
         dm->source_filename = NULL;
+        if(dm->sequence != NULL) free(dm->sequence);
+        dm->sequence = NULL;
         free(dm);
 }
 
@@ -161,16 +172,24 @@ struct coords *
 getcoords(char* filename, char target_chain){
         FILE *fp;
         char buffer[1028];
+        /* common record elements */
         char recname[7];
+        char chain;
+        /* in seqres records */
+        char tlc[4];
+        char numres[5];
+        /* in atom records */
         char name[5];
+        char resname[4];
         char x[9], y[9], z[9];
         char resseq[5];
-        char chain;
+
         int i;
         int n;
         int nres = 0;
         double **coords=NULL;
         struct coords *cs;
+        char *seq_ptr;
         
         fp = fopen(filename, "r");
         if (fp == NULL) return NULL;
@@ -180,27 +199,40 @@ getcoords(char* filename, char target_chain){
 
         cs->source_chain = target_chain;
 
+        /* Allocate memory for/store input filename */
         n = strlen(filename) + 1;
         cs->source_filename = NULL;
         cs->source_filename = malloc(n * sizeof(*(cs->source_filename)));
         if(cs->source_filename == NULL) goto gc_error_cleanup;
         strncpy(cs->source_filename, filename, n);
 
-        /* Initial pass through file to count residues in chain of interest */
+        cs->sequence = NULL;
+        n = 0;
+        /* Parse SEQRES records from PDB header to find primary seq info */
         while(fgets(buffer, 1028, fp)!= NULL){
                 strncpy(recname, buffer, 6); 
                 recname[6] = '\0';
-                if(strcmp("ATOM  ", recname) == 0) {
-                        chain = buffer[21];
+                if(strncmp("SEQRES", recname, 6) == 0) {
+                        chain = buffer[11];
+                        /* first SEQRES for our chain -- read # of residues*/
+                        if(chain == target_chain && cs->sequence == NULL){
+                                strncpy(numres, buffer+13, 4);
+                                numres[4] =  '\0';
+                                nres = atoi(numres);
+                                cs->sequence = malloc((nres + 1) * sizeof(*(cs->sequence)));
+                                if(cs->sequence == NULL) goto gc_error_cleanup;
+                                memset(cs->sequence, 0, nres + 1);
+                                seq_ptr = cs->sequence;
+                        }
+                        /* All SEQRES for our chain -- read primary sequence*/
                         if(chain == target_chain){
-                                strncpy(resseq, buffer+22, 4);
-                                resseq[4] =  '\0';
-                                n = atoi(resseq);
-                                if(n > nres)
-                                        nres = n;
+                            n += read_seqres_line(cs->sequence + n, buffer, nres - n);
+                            if(n == nres) break;
                         }
                 }
         }
+        if(cs->sequence != NULL)
+                cs->sequence[nres] = '\0';
         if(nres == 0) goto gc_error_cleanup;
         
         coords = malloc(nres * sizeof(*coords));
@@ -210,7 +242,6 @@ getcoords(char* filename, char target_chain){
         }
 
         /* Second pass to record co-ordinates into matrix coords */ 
-        rewind(fp);
         while(fgets(buffer, 1028, fp)!= NULL){
                 strncpy(recname, buffer, 6); 
                 recname[6] = '\0';
@@ -229,9 +260,17 @@ getcoords(char* filename, char target_chain){
                                 z[8] = '\0';
 
                                 n = atoi(resseq);
-                                if (n <= 0 || n > nres){ // Bad input data; would segfault
-                                        goto gc_error_cleanup;
+
+                                /* found an atom at a beyond the terminus of
+                                 * the chain recorded in the header.
+                                 * No memory allocated to store this info
+                                 */
+                                if (n <= 0 || n > nres){ 
+                                        fprintf(stderr, "WARNING: unexpected ATOM records found in chain %c [length %d].\n%s", chain, nres, buffer);
+                                        continue;
+                                        /* goto gc_error_cleanup; */
                                 }
+
                                 if(coords[n-1] != NULL){
                                         /* 
                                          * We already stored coordinates for
@@ -262,6 +301,7 @@ getcoords(char* filename, char target_chain){
         gc_error_cleanup:
         if(cs){
                 if(cs->source_filename != NULL) free(cs->source_filename);
+                if(cs->sequence != NULL) free(cs->sequence);
                 free(cs);
         }
         if(coords){
@@ -277,7 +317,7 @@ getcoords(char* filename, char target_chain){
 }
 
 /**
- * freecoords: free a struct coords allocated by etcoords()
+ * freecoords: free a struct coords allocated by getcoords()
  */
 void freecoords(struct coords *cs){
         int i;
@@ -292,6 +332,129 @@ void freecoords(struct coords *cs){
         cs->coords = NULL;
         if(cs->source_filename != NULL) free(cs->source_filename);
         cs->source_filename = NULL;
+        if(cs->sequence != NULL) free(cs->sequence);
+        cs->sequence = NULL;
         free(cs);
 }
 
+
+/**
+ * one_letter_code
+ * convert three letter amino acid codes to one letter codes
+ *
+ * @three_letter_code: pointer to string containing a three-letter amino acid
+ *                     code in UPPERCASE
+ *
+ * Will also process one and two letter RNA/DNA codes valid in PDB SEQRES 
+ * records.
+ *
+ */
+char
+one_letter_code(char *three_letter_code)
+{
+        if(three_letter_code == NULL) return 'X';
+        /* Amino acids */
+        if(0 == strncmp(three_letter_code, "ALA", 3)) return 'A';
+        if(0 == strncmp(three_letter_code, "ASX", 3)) return 'B';
+        if(0 == strncmp(three_letter_code, "CYS", 3)) return 'C';
+        if(0 == strncmp(three_letter_code, "ASP", 3)) return 'D';
+        if(0 == strncmp(three_letter_code, "GLU", 3)) return 'E';
+        if(0 == strncmp(three_letter_code, "PHE", 3)) return 'F';
+        if(0 == strncmp(three_letter_code, "GLY", 3)) return 'G';
+        if(0 == strncmp(three_letter_code, "HIS", 3)) return 'H';
+        if(0 == strncmp(three_letter_code, "ILE", 3)) return 'I';
+        if(0 == strncmp(three_letter_code, "LYS", 3)) return 'K';
+        if(0 == strncmp(three_letter_code, "LEU", 3)) return 'L';
+        if(0 == strncmp(three_letter_code, "MET", 3)) return 'M';
+        if(0 == strncmp(three_letter_code, "ASN", 3)) return 'N';
+        if(0 == strncmp(three_letter_code, "PRO", 3)) return 'P';
+        if(0 == strncmp(three_letter_code, "GLN", 3)) return 'Q';
+        if(0 == strncmp(three_letter_code, "ARG", 3)) return 'R';
+        if(0 == strncmp(three_letter_code, "SER", 3)) return 'S';
+        if(0 == strncmp(three_letter_code, "THR", 3)) return 'T';
+        if(0 == strncmp(three_letter_code, "VAL", 3)) return 'V';
+        if(0 == strncmp(three_letter_code, "TRP", 3)) return 'W';
+        if(0 == strncmp(three_letter_code, "XAA", 3)) return 'X';
+        if(0 == strncmp(three_letter_code, "TYR", 3)) return 'Y';
+        if(0 == strncmp(three_letter_code, "GLX", 3)) return 'Z';
+        /* Ribonucleotides */ 
+        if(0 == strncmp(three_letter_code, "  A", 3)) return 'A';
+        if(0 == strncmp(three_letter_code, "  C", 3)) return 'C';
+        if(0 == strncmp(three_letter_code, "  G", 3)) return 'G';
+        if(0 == strncmp(three_letter_code, "  U", 3)) return 'U';
+        /* Deoxyribonucleotides */ 
+        if(0 == strncmp(three_letter_code, " DA", 3)) return 'A';
+        if(0 == strncmp(three_letter_code, " DC", 3)) return 'C';
+        if(0 == strncmp(three_letter_code, " DG", 3)) return 'G';
+        if(0 == strncmp(three_letter_code, " DT", 3)) return 'T';
+        /* Default */
+        return 'X';
+}
+
+/**
+ * read_seqres_line: parse a seqres record into a primary sequence string
+ *                   fragment
+ *
+ * @out_buffer: pointer to allocated character array of length >= n
+ * @line:       pointer to string containing a PDB seqres record
+ * @n:          maximum number of characters to write to out_buffer
+ *
+ * Returns the number of characters written to @out_buffer.
+ *
+ * Each seqres record stores part of the primary sequence of a chain in 
+ * the PDB file. Read the three-letter code sequence in the record pointed to
+ * by @line, and convert to a one-letter-code string which is then stored at
+ * @out_buffer.
+ *
+ * This function does not write a null terminator to out_buffer.
+ *
+ * EXAMPLE:
+ * If @n is 13, and @line points to the string: 
+ * "SEQRES   1 A   21  GLY ILE VAL GLU GLN CYS CYS THR SER ILE CYS SER LEU"
+ * then this function will write 
+ * "GIVEQCCTSICSL"
+ * to the location pointed to by @out_buffer, and return the value 13.
+ *
+ */
+int
+read_seqres_line(char* out_buffer, char *line, int n)
+{
+        char recname[7];
+        char sernum[4];
+        char resname[4];
+        char numres[5];
+
+        int i;
+        int total_res;
+        int serial;
+        int recorded_res;
+        int offset;
+
+        if(line == NULL) return 0;
+        if(out_buffer == NULL) return 0;
+        if(n <= 0) return 0;
+        
+        strncpy(recname, line, 6);
+        recname[6] = '\0';
+        if(0 != strncmp("SEQRES", recname, 6)) return 0;
+
+        strncpy(sernum, line + 7, 3);
+        sernum[3] = '\0';
+        serial = atoi(sernum);
+       
+        strncpy(numres, line+13, 4);
+        numres[4] = '\0';
+        total_res = atoi(numres);
+
+        offset =  (serial - 1) * 13;        
+        recorded_res = total_res - offset > 13 ? 13 : total_res - offset;
+
+        i=0;
+        while(i < recorded_res && i < n){
+                strncpy(resname, line + 19 + (4 * i), 3);
+                resname[3] = '\0';
+                out_buffer[i] = one_letter_code(resname);
+                i++;
+        }
+        return i;
+}

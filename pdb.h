@@ -24,6 +24,7 @@
 struct coords{
         double **coords;
         char *source_filename;
+        char *sequence;
         int nres;
         char source_chain;
 };
@@ -31,6 +32,7 @@ struct coords{
 struct distmat{
         double **mat;
         char *source_filename;
+        char *sequence;
         int nres;
         char source_chain;
 };
@@ -41,5 +43,7 @@ void freecoords(struct coords *cs);
 void freedm(struct distmat *dm);
 struct coords * getcoords(char* filename, char chain);
 double getdist(struct distmat dm, int i, int j);
+char one_letter_code(char *three_letter_code);
+int read_seqres_line(char* out_buffer, char *line, int n);
 
 #endif // CMAP_PDB_H_
