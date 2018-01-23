@@ -34,3 +34,65 @@ write_contacts(FILE *fp, struct distmat dm, double threshold)
         return;
 }
 
+/**
+ * write_eps: write encapsulated postscript diagram of a contact map
+ *
+ * @fp: file pointer open for writing
+ * @dm: distance matrix
+ * @threshold: distance threshold used to calculate contacts
+ */
+void
+write_eps(FILE *fp, struct distmat dm, double threshold)
+{
+        int i, j;
+        int xmax;
+        int ymax;
+
+        if(fp == NULL){
+                return;
+        }
+
+        xmax = dm.nres * 5 + 20;
+        ymax = dm.nres * 5 + 20;
+
+        fprintf(fp, "%%!PS-Adobe EPSF-3.0\n");
+        fprintf(fp, "%%%%BoundingBox: 0 0 %d %d\n", xmax, ymax);
+        fprintf(fp, "1 1 scale\n");
+
+        fprintf(fp, "newpath\n"
+                    "10 10 moveto\n"
+                    "0 %d rlineto\n"
+                    "%d 0 rlineto\n"
+                    "0 -%d rlineto\n"
+                    "-%d 0 rlineto\n"
+                    "closepath\n"
+                    "1 setlinewidth\n"
+                    "stroke\n",
+                    dm.nres * 5 + 1, dm.nres * 5 + 1, dm.nres * 5 + 1, 
+                    dm.nres * 5 + 1);
+
+        fprintf(fp, "/square {\n"
+                    "/y exch def\n"
+                    "/x exch def\n"
+                    "gsave\n"
+                    "newpath\n"
+                    "y x moveto\n"
+                    "0 5 rlineto\n"
+                    "5 0 rlineto\n"
+                    "0 -5 rlineto\n"
+                    "-5 0 rlineto\n"
+                    "closepath\n"
+                    "fill\n"
+                    "}\n"
+                    "def\n");
+
+        for(i = 0; i < dm.nres; i++){
+                for(j = 0; j < dm.nres; j++){
+                       if(getdist(dm, i, j) < threshold) 
+                               fprintf(fp, "%d %d square\n", 
+                                               (dm.nres * 5 + 6) - i*5,
+                                               11 + j * 5);
+                }
+        }
+        return;
+}

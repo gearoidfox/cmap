@@ -5,5 +5,6 @@
 #include "pdb.h"
 
 void write_contacts(FILE *fp, struct distmat dm, double threshold);
+void write_eps(FILE *fp, struct distmat dm, double threshold);
 
 #endif // CMAP_OUTPUT_H_

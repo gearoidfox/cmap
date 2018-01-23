@@ -359,6 +359,7 @@ main(int argc, char **argv)
         int j;
         char *filename = NULL;
         char *ofname = NULL;
+        char *epsname = NULL;
         FILE *ofp;
         struct distmat * dist = NULL; 
         double threshold = 8;
@@ -370,9 +371,10 @@ main(int argc, char **argv)
 
         snprintf(usage_str, 1024, "cmap version 0.1\n\n"
                         "Usage:\n"
-                        "  cmap [-c chain] [-o output_file] [-t threshold] <pdb_file>\n"
+                        "  cmap [-c chain] [-e eps_file] [-o output_file] [-t threshold] <pdb_file>\n"
                         "\nOptions:\n"
                         "  -c, --chain      chain to read from input file\n"
+                        "  -e, --eps        save EPS image of contact map (experimental)\n"
                         "  -h, --help       show this message\n"
                         "  -o, --output     save contacts to file\n"
                         "  -t, --threshold  distance threshold for contact (Angstroms)\n"
@@ -384,16 +386,17 @@ main(int argc, char **argv)
         static struct option long_options[] =
         {
                 {"chain", required_argument, 0, 'c'},
-                {"dist", required_argument, 0, 't'},
+                {"eps", required_argument, 0, 'e'},
                 {"help", no_argument, 0, 'h'},
                 {"output", required_argument, 0, 'o'},
+                {"threshold", required_argument, 0, 't'},
                 {0, 0, 0, 0}
         };
 
         int option_index = 0;
         int opt;
         while(1){
-                opt = getopt_long(argc, argv, "c:ht:o:", long_options, &option_index);
+                opt = getopt_long(argc, argv, "c:e:ho:t:", long_options, &option_index);
                 if(opt == -1)
                         break;
                 if (opt == 'c'){
@@ -408,6 +411,9 @@ main(int argc, char **argv)
                 }
                 if(opt == 'o'){
                         ofname = optarg;
+                }
+                if(opt == 'e'){
+                        epsname = optarg;
                 }
         }
         if( argc < 2){
@@ -455,6 +461,23 @@ main(int argc, char **argv)
                 }
                 write_contacts(ofp, *dist, threshold);
                 printf("Wrote contacts to file [%s].\n", ofname);
+                fclose(ofp);
+                ofp = NULL;
+        }
+
+        /*
+         * Write EPS file (optional)
+         */
+
+        if(epsname != NULL){
+                ofp = fopen(epsname, "w");
+                if(ofp == NULL){
+                        fprintf(stderr, "%s", usage_str);
+                        fprintf(stderr, "FATAL: couldn't open output file [%s]\n", epsname);
+                        return 1;
+                }
+                write_eps(ofp, *dist, threshold);
+                printf("Wrote postscript to file [%s].\n", epsname);
                 fclose(ofp);
                 ofp = NULL;
         }
