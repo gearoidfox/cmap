@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.69])
 AC_INIT([cmap], [0.1], [])
-AC_CONFIG_SRCDIR([pdb.c])
+AC_CONFIG_SRCDIR([src/pdb.c])
 
 # Checks for programs.
 AC_PROG_CC
@@ -38,4 +38,6 @@ AC_CHECK_FUNCS([floor pow setlocale sqrt])
 
 AM_INIT_AUTOMAKE([-Wall foreign])
 AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
+AC_CONFIG_FILES([src/Makefile])
 AC_OUTPUT
