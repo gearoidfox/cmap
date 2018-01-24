@@ -2,10 +2,17 @@
 
 cmap is a command line program which reads [Protein Data Bank](http://pdb101.rcsb.org/learn/guide-to-understanding-pdb-data/introduction) coordinate files and uses ncurses to display a [protein contact map](https://en.wikipedia.org/wiki/Protein_contact_map).
 
+### Features
+
+- view contact map in a terminal
+- save list of contacts to file
+- save high quality diagram of contact map in eps format
+
 ![Screenshot](screenshots/screenshot1.png?raw=true)
 
 ## Usage
 
+    cmap <pdb file>
     cmap --help
 
 ## Installation
@@ -36,7 +43,7 @@ cmap is designed for 256 colour terminals that support redefining colours. If po
 
     export TERM=xterm-256color
 
-cmap will also run in terminals with more limited colour support--e.g. xterm or vt220 modes--but it won't look as nice. 
+cmap will also run in terminals with limited colour support--e.g. xterm or vt220 modes--but it won't look as nice. 
 
 ### Fonts
 
