@@ -63,3 +63,6 @@ In Terminator, TERM=xterm-256color, using font Ubuntu Mono Regular:
 
 In vt100 compatibility mode:
 ![Screenshot](screenshots/screenshot3.png?raw=true)
+
+Postscript output:
+![Screenshot](screenshots/eps.png?raw=true)
