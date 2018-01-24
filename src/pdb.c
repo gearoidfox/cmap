@@ -26,8 +26,8 @@
 #include"pdb.h"
 
 /**
- * Find euclidean distance between two atoms located at coordinates (x1, y1, z1)
- * and (x2, y2, z2), respectively.
+ * euclid3d: Find euclidean distance between two atoms located at coordinates
+ * (x1, y1, z1) and (x2, y2, z2), respectively.
  */
 double
 euclid3d(double x1, double y1, double z1, double x2, double y2, double z2)
@@ -37,14 +37,19 @@ euclid3d(double x1, double y1, double z1, double x2, double y2, double z2)
 
 
 /**
- * Create a distance matrix from atomic coordinates coordinates
+ * calculate_distmat: Create a distance matrix from atomic coordinates
  *
  * @coords: a structure containing 3D coordinates of a group of atoms
  *
- * returns a pointer to distmat structure with the pairwise euclidean distances
- * of the atoms. 
+ * Returns a pointer to distmat structure storing the pairwise euclidean
+ * distances of the atoms. 
  *
- * Allocates memory for this structure
+ * Allocates memory for this structure, which should be freed with function
+ * freedm()
+ *
+ * Returns NULL if a distance matrix cannot be calculated/allocated. 
+ *
+ * Use getdist() on the distance matrix to query distances between residues
  *
  */
 struct distmat *
@@ -83,6 +88,9 @@ calculate_distmat(struct coords cs)
         dist = malloc((cs.nres - 1) * sizeof(*dist));
         if(dist == NULL) goto cdm_error_cleanup;
 
+        /* Allocate "triangular" matrix 
+         * Distance matrix has diagonal symmetry, so only store one half
+         */
         for(i = 0; i < cs.nres - 1; i++){
                 dist[i] = NULL;
                 dist[i] = malloc((cs.nres - 1 - i) * sizeof(*dist[i]));
@@ -102,7 +110,8 @@ calculate_distmat(struct coords cs)
         dm->mat = dist;
         return dm;
         /* 
-         * Avoid leaking memory by freeing all allocated memory before
+         * In the event of an error occurring inside this function,
+         * avoid leaking memory by freeing all allocated memory before
          * return NULL. Needed if any call to malloc after the first fails.
          */
         cdm_error_cleanup:
@@ -127,7 +136,16 @@ calculate_distmat(struct coords cs)
 }
 
 /**
+ * getdist: extract distances from a struct distmat object
+ * 
+ * @dm: distance matrix
+ * @i:  index of a residue in protein chain
+ * @j:  index of a second residue
  *
+ * Returns the distance between residues @i and @j as stored in @dm
+ *
+ * dm.mat is stored in a triangular form, which is why we can't just read
+ * off dm.mat[i][j] directly.
  */
 double
 getdist(struct distmat dm, int i, int j)
@@ -214,7 +232,7 @@ getcoords(char* filename, char target_chain){
                 recname[6] = '\0';
                 if(strncmp("SEQRES", recname, 6) == 0) {
                         chain = buffer[11];
-                        /* first SEQRES for our chain -- read # of residues*/
+                        /* At first SEQRES for our chain -- read # of residues*/
                         if(chain == target_chain && cs->sequence == NULL){
                                 strncpy(numres, buffer+13, 4);
                                 numres[4] =  '\0';
@@ -224,7 +242,7 @@ getcoords(char* filename, char target_chain){
                                 memset(cs->sequence, 0, nres + 1);
                                 seq_ptr = cs->sequence;
                         }
-                        /* All SEQRES for our chain -- read primary sequence*/
+                        /* At all SEQRES for our chain -- read primary sequence*/
                         if(chain == target_chain){
                             n += read_seqres_line(cs->sequence + n, buffer, nres - n);
                             if(n == nres) break;
@@ -294,7 +312,7 @@ getcoords(char* filename, char target_chain){
         fclose(fp);
         return cs;
 
-        /* 
+        /* In the event of an error in this function: 
          * Avoid leaking memory by freeing all allocated memory before
          * returning NULL. Needed if any call to malloc after the first fails.
          */
@@ -318,6 +336,7 @@ getcoords(char* filename, char target_chain){
 
 /**
  * freecoords: free a struct coords allocated by getcoords()
+ * @cs: pointer to struct coords which is to be freed
  */
 void freecoords(struct coords *cs){
         int i;

@@ -33,15 +33,21 @@
 #include"pdb.h"
 #include"output.h"
 
-bool g_has_colours = false;
+/* Global flag indicating if the terminal supports colour */
+bool g_has_colours = false; 
 
 /**
  * make_hpos_str: create a string marking every 20th position in protein chain
- * @x_draw_limit: maximum number of columns to be printed in unicode
- * representation of contact map.
+ * horizontally.
+ * i.e. a string of the form  "1         21        41       " ... of the 
+ * appropriate length.
  *
- * allocates and returns a string of length @x_draw_limit+1 which should be freed
- * manually if necessary.
+ * @x_draw_limit: maximum number of columns to be printed in unicode
+ *      representation of contact map. (We display 2 points per character in 
+ *      the x direction)
+ *
+ * Allocates and returns a null-terminated string of length @x_draw_limit + 1
+ * which should be freed manually if necessary.
  */
 char *
 make_hpos_str(unsigned int x_draw_limit)
@@ -74,11 +80,16 @@ make_hpos_str(unsigned int x_draw_limit)
 
 /**
  * make_vpos_str: create a string marking every 20th position in protein chain
- * @y_draw_limit: maximum number of rows to be printed in the unicode
- * representation of the contact map.
+ * vertically.
+ * i.e. a string of the form  "1    21   41   61 " ... of the 
+ * appropriate length.
  *
- * allocates and returns a string of length @y_draw_limit+1 which should be
- * freed manually if necessary.
+ * @x_draw_limit: maximum number of rows to be printed in unicode
+ *      representation of contact map. (We display 4 points per character in 
+ *      the x direction)
+ *
+ * Allocates and returns a null-terminated string of length @y_draw_limit + 1
+ * which should be freed manually if necessary.
  */
 char *
 make_vpos_str(unsigned int y_draw_limit)
@@ -181,25 +192,33 @@ draw_bg(WINDOW * scr, unsigned int cols, unsigned int rows){
 }
 
 /**
- * draw_contacts_pad
+ * draw_contacts_pad: create a curses pad containing the unicode "picture" of 
+ * the contact map.
  *
- * @dist
- * @threshold
+ * @dist: distance matrix used to calculate contacts
+ * @threshold: threshold for defining a contact (Angstroms)
+ *
+ * Allocates and returns a pointer to a WINDOW, which should be freed manually.
+ *
+ * Draws the contact map using the unicode braille character set 
+ * (U+2800 to U+28FF)
  */
 WINDOW *
 draw_contacts_pad(struct distmat dist, double threshold)
 {
 
-        int i, j;
-        int prot_y, prot_x;
+        int i, j; // track coordinates in the pad
+        int prot_y, prot_x; // track coordinates in terms of the protein chain
+        int x_draw_limit;
+        int y_draw_limit;
         wchar_t ch = ' ';
         wchar_t s[2] = L" ";
         WINDOW *contacts = NULL;
         int nres;
 
         nres = dist.nres;
-        int x_draw_limit = nres % 2 == 0 ? nres/2 : nres/2 + 1;
-        int y_draw_limit = nres % 4 == 0 ? nres/4 : nres/4 + 1;
+        x_draw_limit = nres % 2 == 0 ? nres/2 : nres/2 + 1;
+        y_draw_limit = nres % 4 == 0 ? nres/4 : nres/4 + 1;
         contacts = newpad(y_draw_limit, x_draw_limit);
         if(contacts == NULL){
                 return NULL;
@@ -320,6 +339,18 @@ draw_contacts_pad(struct distmat dist, double threshold)
         return contacts;
 }
 
+/**
+ * draw_status_pad: create a curses pad displaying status information for the
+ * program. This pad is one row high, and 1025 columns wide, with the status
+ * information aligned to the left.
+ *
+ * @filename:  pointer to string containing name of input file
+ * @chain:     chain being displayed
+ * @nres:      number of residues in chain
+ * @threshold: distance threshold used for contacts
+ *
+ * Allocates and returns a WINDOW, which should be freed manually.
+ */
 WINDOW *
 draw_status_pad(char *filename, char chain, int nres, double threshold)
 {
