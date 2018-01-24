@@ -369,15 +369,17 @@ main(int argc, char **argv)
         int nrow, ncol;
         char usage_str[1024];
 
-        snprintf(usage_str, 1024, "cmap version %s\n\n"
+        snprintf(usage_str, 1024, "cmap version %s\n"
+                        "View protein contact maps.\n\n"
                         "Usage:\n"
-                        "  cmap [-c chain] [-e eps_file] [-o output_file] [-t threshold] <pdb_file>\n"
-                        "\nOptions:\n"
-                        "  -c, --chain      chain to read from input file\n"
-                        "  -e, --eps        save EPS image of contact map (experimental)\n"
-                        "  -h, --help       show this message\n"
-                        "  -o, --output     save contacts to file\n"
-                        "  -t, --threshold  distance threshold for contact (Angstroms)\n"
+                        "  cmap [options] <FILE>\n"
+                        "\nInput options:\n"
+                        "  -c, --chain=CHAR     chain from which to read coordinates\n"
+                        "  -t, --threshold=NUM  distance threshold for contact (Angstroms)\n"
+                        "\nOutput options:\n"
+                        "  -h, --help           show this message\n"
+                        "  -o, --output=FILE    save list of contacts to text file\n"
+                        "  -e, --eps=FILE       save EPS image of contact map (experimental)\n"
                         "\n", PACKAGE_VERSION); 
 
         /*
