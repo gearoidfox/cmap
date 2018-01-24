@@ -65,4 +65,5 @@ In vt100 compatibility mode:
 ![Screenshot](screenshots/screenshot3.png?raw=true)
 
 Postscript output:
+
 ![Screenshot](screenshots/eps.png?raw=true)
