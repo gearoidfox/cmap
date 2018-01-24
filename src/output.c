@@ -17,7 +17,7 @@ write_contacts(FILE *fp, struct distmat dm, double threshold)
         if(fp == NULL){
                 return;
         }
-        fprintf(fp, "# cmap v0.1\n");
+        fprintf(fp, "# cmap v%s\n", PACKAGE_VERSION);
         if(dm.source_filename != NULL)
                 fprintf(fp, "# source file: %s\n", dm.source_filename);
         if(dm.source_chain != '\0')

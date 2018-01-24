@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([cmap], [0.1], [])
+AC_INIT([cmap], [0.2], [])
 AC_CONFIG_SRCDIR([src/pdb.c])
 
 # Checks for programs.

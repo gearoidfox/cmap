@@ -369,7 +369,7 @@ main(int argc, char **argv)
         int nrow, ncol;
         char usage_str[1024];
 
-        snprintf(usage_str, 1024, "cmap version 0.1\n\n"
+        snprintf(usage_str, 1024, "cmap version %s\n\n"
                         "Usage:\n"
                         "  cmap [-c chain] [-e eps_file] [-o output_file] [-t threshold] <pdb_file>\n"
                         "\nOptions:\n"
@@ -378,7 +378,7 @@ main(int argc, char **argv)
                         "  -h, --help       show this message\n"
                         "  -o, --output     save contacts to file\n"
                         "  -t, --threshold  distance threshold for contact (Angstroms)\n"
-                        "\n");
+                        "\n", PACKAGE_VERSION); 
 
         /*
          * Parse command line arguments
