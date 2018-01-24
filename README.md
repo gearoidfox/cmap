@@ -31,7 +31,7 @@ On Ubuntu (17.10), you should install libncursesw5-dev, e.g.
 
     sudo apt install libncursesw5-dev
 
-On OS X (10.6), the standard ncurses library is OK.
+On OS X (10.9), the standard ncurses library is OK.
 
 ## Compatibility
 
