@@ -45,53 +45,67 @@ void
 write_eps(FILE *fp, struct distmat dm, double threshold)
 {
         int i, j;
-        int xmax;
-        int ymax;
-
+        float xmax;
+        float ymax;
+        float oma = 0;
+        float boxw;
+        float framewidth = 1;
         if(fp == NULL){
                 return;
         }
+        /* Draw about six sq inches, irrespective of chain length
+         * Might be bad for long chains.
+         */
+        boxw = (72. * 6. / dm.nres ) ;
 
-        xmax = dm.nres * 5 + 20;
-        ymax = dm.nres * 5 + 20;
+        xmax = 2 * oma + 2 * framewidth + dm.nres * boxw;
+        ymax = xmax + 40;
 
         fprintf(fp, "%%!PS-Adobe EPSF-3.0\n");
-        fprintf(fp, "%%%%BoundingBox: 0 0 %d %d\n", xmax, ymax);
-        fprintf(fp, "1 1 scale\n");
+        fprintf(fp, "%%%%BoundingBox: %f %f %f %f\n", oma, oma, xmax, ymax);
+        fprintf(fp, "/Courier\n12 selectfont\n");
+        fprintf(fp, "5 %f moveto\n", ymax - 15);
+        fprintf(fp, "(File: %s) show\n", dm.source_filename);
+        fprintf(fp, "5 %f moveto\n", ymax - 30);
+        fprintf(fp, "(Threshold: %.2f) show\n", threshold);
 
+        fprintf(fp, "gsave\n.75 .75 .75 setrgbcolor\n");
         fprintf(fp, "newpath\n"
-                    "10 10 moveto\n"
-                    "0 %d rlineto\n"
-                    "%d 0 rlineto\n"
-                    "0 -%d rlineto\n"
-                    "-%d 0 rlineto\n"
+                    "%f %f moveto\n"
+                    "0 %f rlineto\n"
+                    "%f 0 rlineto\n"
+                    "0 -%f rlineto\n"
+                    "-%f 0 rlineto\n"
                     "closepath\n"
-                    "1 setlinewidth\n"
+                    "%f setlinewidth\n"
                     "stroke\n",
-                    dm.nres * 5 + 1, dm.nres * 5 + 1, dm.nres * 5 + 1, 
-                    dm.nres * 5 + 1);
+                    oma + framewidth/2., oma + framewidth/2.,
+                    dm.nres * boxw + 1, dm.nres * boxw + 1, dm.nres * boxw + 1,
+                    dm.nres * boxw + 1, framewidth);
 
+
+        fprintf(fp, "grestore\n");
         fprintf(fp, "/square {\n"
-                    "/y exch def\n"
                     "/x exch def\n"
+                    "/y exch def\n"
                     "gsave\n"
                     "newpath\n"
-                    "y x moveto\n"
-                    "0 5 rlineto\n"
-                    "5 0 rlineto\n"
-                    "0 -5 rlineto\n"
-                    "-5 0 rlineto\n"
+                    "x y moveto\n"
+                    "0 %f rlineto\n"
+                    "%f 0 rlineto\n"
+                    "0 -%f rlineto\n"
+                    "-%f 0 rlineto\n"
                     "closepath\n"
                     "fill\n"
                     "}\n"
-                    "def\n");
+                    "def\n", boxw, boxw, boxw, boxw);
 
         for(i = 0; i < dm.nres; i++){
                 for(j = 0; j < dm.nres; j++){
-                       if(getdist(dm, i, j) < threshold) 
-                               fprintf(fp, "%d %d square\n", 
-                                               (dm.nres * 5 + 6) - i*5,
-                                               11 + j * 5);
+                       if(getdist(dm, i, j) < threshold)
+                               fprintf(fp, "%f %f square\n",
+                                               xmax - oma - framewidth -  (i+1)*boxw,
+                                               oma + framewidth + j * boxw);
                 }
         }
         return;
